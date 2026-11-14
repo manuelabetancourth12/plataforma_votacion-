@@ -1,0 +1,25 @@
+spring:
+  # Configuración de PostgreSQL (Coincide con el docker-compose.yml)
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/voting_audit
+    username: admin
+    password: secretpassword
+    driver-class-name: org.postgresql.Driver
+  
+  # Hibernate (Crea las tablas automáticamente)
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Configuración de Kafka
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: analytics_archiver_group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer

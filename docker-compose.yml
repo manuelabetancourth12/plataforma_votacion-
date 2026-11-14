@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. INFRAESTRUCTURA (Brokers y Bases de Datos)
+  # ==========================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - voting_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.4
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - voting_network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672" # Panel web de RabbitMQ
+    networks:
+      - voting_network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: voting_audit
+    ports:
+      - "5432:5432"
+    networks:
+      - voting_network
+
+  # ==========================================
+  # 2. MICROSERVICIOS (Tu código Java)
+  # ==========================================
+  voting-api:
+    build: 
+      context: ./voting_api
+    container_name: voting_api
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - voting_network
+
+  vote-processor:
+    build:
+      context: ./vote_processor
+    container_name: vote_processor
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - kafka
+      - rabbitmq
+    networks:
+      - voting_network
+
+  bot-detector:
+    build:
+      context: ./bot_detector_service
+    container_name: bot_detector_service
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - voting_network
+
+  analytics-archiver:
+    build:
+      context: ./analytics_archiver
+    container_name: analytics_archiver
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - DB_HOST=postgres
+    depends_on:
+      - kafka
+      - postgres
+    networks:
+      - voting_network
+
+networks:
+  voting_network:
+    driver: bridge
