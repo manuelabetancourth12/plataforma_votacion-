@@ -1,6 +1,7 @@
 package com.voting.application;
 
 import com.voting.infrastructure.persistence.VoteEntity;
+import com.voting.infrastructure.persistence.VoteMapper;
 import com.voting.infrastructure.persistence.VoteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,9 +13,11 @@ import java.util.Optional;
 public class AnalyticsService {
 
     private final VoteRepository voteRepository;
+    private final VoteMapper voteMapper;
 
-    public AnalyticsService(VoteRepository voteRepository) {
+    public AnalyticsService(VoteRepository voteRepository, VoteMapper voteMapper) {
         this.voteRepository = voteRepository;
+        this.voteMapper = voteMapper;
     }
 
     @Transactional
@@ -22,11 +25,12 @@ public class AnalyticsService {
         Optional<VoteEntity> existingVote = voteRepository.findByVoterId(voterId);
 
         if (existingVote.isPresent()) {
-            // Si el voto ya existe (el usuario cambió su voto), en un sistema de auditoría real
-            // podríamos guardar un histórico de cambios, pero aquí mantenemos el estado final.
-            System.out.println("Actualizando registro de auditoría para votante: " + voterId);
+            VoteEntity entity = existingVote.get();
+            entity.updateVote(candidateId, regionId, timestamp);
+            voteRepository.save(entity);
+            System.out.println("Registro de auditoría actualizado para votante: " + voterId);
         } else {
-            VoteEntity newVote = new VoteEntity(voterId, candidateId, regionId, timestamp);
+            VoteEntity newVote = voteMapper.toEntity(voterId, candidateId, regionId, timestamp);
             voteRepository.save(newVote);
             System.out.println("Voto archivado en PostgreSQL exitosamente para: " + voterId);
         }

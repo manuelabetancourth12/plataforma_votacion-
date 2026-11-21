@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Votación en Vivo</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; max-width: 680px; margin: 2rem auto; padding: 0 1rem; background: #0f172a; color: #e2e8f0; }
+        header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+        h1 { margin: 0; font-size: 1.5rem; color: #38bdf8; }
+        nav a { color: #94a3b8; text-decoration: none; font-size: 0.9rem; margin-left: 1rem; }
+        nav a:hover { color: #38bdf8; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; }
+        label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.4rem; margin-top: 1rem; }
+        input, select { width: 100%; padding: 0.65rem 0.8rem; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; font-size: 1rem; }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+        .chip { background: #334155; border: none; color: #cbd5e1; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer; }
+        .chip:hover { background: #475569; }
+        .chip.invalid { background: #7f1d1d; color: #fecaca; }
+        .actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        button.primary { flex: 1; background: #0284c7; color: #fff; border: none; padding: 0.8rem 1.2rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        button.primary:hover { background: #0369a1; }
+        button.danger { background: #b45309; color: #fff; border: none; padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        button.danger:hover { background: #92400e; }
+        .log { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .alert { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.9rem; }
+        .alert.ok { background: #064e3b; border: 1px solid #10b981; color: #d1fae5; }
+        .alert.err { background: #7f1d1d; border: 1px solid #ef4444; color: #fee2e2; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Emitir Voto en Vivo</h1>
+        <nav>
+            <a href="http://localhost:8081/dashboard.html" target="_blank">Dashboard Global</a>
+            <a href="http://localhost:8082/dashboard.html" target="_blank">Dashboard Regional</a>
+        </nav>
+    </header>
+
+    <div class="card">
+        <label for="voterId">ID del Votante</label>
+        <input id="voterId" type="text" value="VOTER-100" placeholder="Ej. VOTER-100">
+        <div class="chips">
+            <button type="button" class="chip" onclick="setVoter('VOTER-100')">VOTER-100</button>
+            <button type="button" class="chip" onclick="setVoter('VOTER-200')">VOTER-200</button>
+            <button type="button" class="chip" onclick="setVoter('VOTER-300')">VOTER-300</button>
+            <button type="button" class="chip" onclick="setVoter('VOTER-400')">VOTER-400</button>
+            <button type="button" class="chip invalid" onclick="setVoter('VOTER-999')">VOTER-999 (No elegible)</button>
+        </div>
+
+        <label for="candidateId">Candidato</label>
+        <select id="candidateId">
+            <option value="CAND-A">CAND-A</option>
+            <option value="CAND-B">CAND-B</option>
+            <option value="CAND-C">CAND-C</option>
+        </select>
+
+        <label for="regionId">Región</label>
+        <select id="regionId">
+            <option value="NORTE">NORTE</option>
+            <option value="SUR">SUR</option>
+            <option value="CENTRO">CENTRO</option>
+        </select>
+
+        <div class="actions">
+            <button class="primary" onclick="sendVote()">Emitir Voto</button>
+            <button class="danger" onclick="simulateBurst()">Simular Ráfaga Bot (6x)</button>
+        </div>
+
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        function setVoter(id) {
+            document.getElementById('voterId').value = id;
+        }
+
+        function appendLog(ok, text) {
+            const log = document.getElementById('log');
+            const div = document.createElement('div');
+            div.className = `alert ${ok ? 'ok' : 'err'}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            log.prepend(div);
+            while (log.children.length > 8) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        async function sendVote() {
+            const payload = {
+                voterId: document.getElementById('voterId').value.trim(),
+                candidateId: document.getElementById('candidateId').value,
+                regionId: document.getElementById('regionId').value
+            };
+            try {
+                const res = await fetch('/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const body = await res.text();
+                appendLog(res.ok, `HTTP ${res.status} (${payload.voterId} -> ${payload.candidateId}/${payload.regionId}): ${body}`);
+            } catch (e) {
+                appendLog(false, `Error de red: ${e.message}`);
+            }
+        }
+
+        async function simulateBurst() {
+            for (let i = 1; i <= 6; i++) {
+                await sendVote();
+                await new Promise(r => setTimeout(r, 200));
+            }
+        }
+    </script>
+</body>
+</html>

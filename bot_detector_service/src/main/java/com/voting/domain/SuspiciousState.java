@@ -2,7 +2,7 @@ package com.voting.domain;
 
 public class SuspiciousState implements RiskState {
     @Override
-    public void registerActivity(VoterActivityContext context) {
+    public void registerActivity(IpActivityContext context) {
         if (context.getActivityCount() > 5) {
             context.setState(new BlockedState());
         }

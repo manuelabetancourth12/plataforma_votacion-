@@ -19,11 +19,12 @@ public class RawVoteKafkaListener {
     @KafkaListener(topics = "raw_votes", groupId = "global_counter_group")
     public void consumeVote(String voteJson) {
         try {
-            // Extraemos solo el candidateId del JSON proveniente de Kafka
+            // Extraemos voterId y candidateId del JSON proveniente de Kafka
             JsonNode root = mapper.readTree(voteJson);
+            String voterId = root.path("voterId").path("value").asText();
             String candidateId = root.path("candidateId").path("value").asText();
-            
-            aggregationService.processNewVote(candidateId);
+
+            aggregationService.processNewVote(voterId, candidateId);
         } catch (Exception e) {
             System.err.println("Error procesando voto: " + e.getMessage());
         }

@@ -33,6 +33,15 @@ public class VoteEntity {
         this.timestamp = timestamp;
     }
 
+    public void updateVote(String candidateId, String regionId, Instant timestamp) {
+        if (candidateId == null || candidateId.isBlank() || regionId == null || regionId.isBlank() || timestamp == null) {
+            throw new IllegalArgumentException("Datos de actualización de voto inválidos");
+        }
+        this.candidateId = candidateId;
+        this.regionId = regionId;
+        this.timestamp = timestamp;
+    }
+
     // Getters
     public Long getId() { return id; }
     public String getVoterId() { return voterId; }

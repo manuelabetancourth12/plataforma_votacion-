@@ -27,16 +27,25 @@ public class AuditVoteListener {
             String candidateId = root.path("candidateId").path("value").asText();
             String regionId = root.path("regionId").path("value").asText();
             
-            // Si la fecha viene en el JSON, la usamos, sino usamos la actual
-            Instant timestamp = Instant.now(); 
-            if (root.has("timestamp")) {
-                timestamp = Instant.parse(root.path("timestamp").asText());
-            }
+            Instant timestamp = parseTimestamp(root.path("timestamp"));
 
             analyticsService.archiveVote(voterId, candidateId, regionId, timestamp);
 
         } catch (Exception e) {
             System.err.println("Error procesando voto para auditoría: " + e.getMessage());
         }
+    }
+
+    private Instant parseTimestamp(JsonNode timestampNode) {
+        if (timestampNode == null || timestampNode.isMissingNode() || timestampNode.isNull()) {
+            return Instant.now();
+        }
+        if (timestampNode.isNumber()) {
+            long seconds = timestampNode.longValue();
+            long nanos = Math.round((timestampNode.doubleValue() - seconds) * 1_000_000_000L);
+            return Instant.ofEpochSecond(seconds, nanos);
+        }
+        String text = timestampNode.asText();
+        return (text == null || text.isBlank()) ? Instant.now() : Instant.parse(text);
     }
 }

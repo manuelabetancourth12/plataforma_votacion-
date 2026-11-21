@@ -20,8 +20,11 @@ public class FraudVoteListener {
     public void consumeForAnalysis(String voteJson) {
         try {
             JsonNode root = mapper.readTree(voteJson);
-            String voterId = root.path("voterId").path("value").asText();
-            fraudService.analyzeVoteStream(voterId);
+            String ipAddress = root.path("ipAddress").path("value").asText();
+            if (ipAddress == null || ipAddress.isBlank()) {
+                ipAddress = root.path("voterId").path("value").asText();
+            }
+            fraudService.analyzeVoteStream(ipAddress);
         } catch (Exception e) {
             System.err.println("Error analizando evento para fraude: " + e.getMessage());
         }

@@ -1,0 +1,7 @@
+server:
+  port: 8082
+
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672

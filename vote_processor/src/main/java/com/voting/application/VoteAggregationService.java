@@ -16,8 +16,8 @@ public class VoteAggregationService {
         this.publisher = publisher;
     }
 
-    public void processNewVote(String candidateId) {
-        counter.registerVote(candidateId);
+    public void processNewVote(String voterId, String candidateId) {
+        counter.registerVote(voterId, candidateId);
     }
 
     // Tarea programada: Difunde los resultados cada 1 segundo (1000 ms)

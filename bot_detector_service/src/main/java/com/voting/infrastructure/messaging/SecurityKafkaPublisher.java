@@ -14,9 +14,9 @@ public class SecurityKafkaPublisher implements SecurityAlertPublisher {
     }
 
     @Override
-    public void publishAlert(String voterId, String riskLevel) {
-        String alertMessage = String.format("{\"voterId\": \"%s\", \"riskLevel\": \"%s\"}", voterId, riskLevel);
-        kafkaTemplate.send("security_alerts", voterId, alertMessage);
+    public void publishAlert(String ipAddress, String riskLevel) {
+        String alertMessage = String.format("{\"ipAddress\": \"%s\", \"riskLevel\": \"%s\"}", ipAddress, riskLevel);
+        kafkaTemplate.send("security_alerts", ipAddress, alertMessage);
         System.out.println("⚠️ ALERTA DE SEGURIDAD EMITIDA: " + alertMessage);
     }
 }

@@ -1,0 +1,7 @@
+[
+  { "voterId": "VOTER-100", "eligible": true },
+  { "voterId": "VOTER-200", "eligible": true },
+  { "voterId": "VOTER-300", "eligible": true },
+  { "voterId": "VOTER-400", "eligible": true },
+  { "voterId": "VOTER-999", "eligible": false }
+]

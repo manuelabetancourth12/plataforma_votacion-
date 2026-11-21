@@ -2,7 +2,7 @@ package com.voting.domain;
 
 public class NormalState implements RiskState {
     @Override
-    public void registerActivity(VoterActivityContext context) {
+    public void registerActivity(IpActivityContext context) {
         if (context.getActivityCount() > 3) {
             context.setState(new SuspiciousState());
         }

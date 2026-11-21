@@ -1,6 +1,6 @@
 package com.voting.domain;
 
 public interface RiskState {
-    void registerActivity(VoterActivityContext context);
+    void registerActivity(IpActivityContext context);
     String getLevel();
 }

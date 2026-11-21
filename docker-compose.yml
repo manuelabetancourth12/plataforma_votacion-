@@ -10,6 +10,11 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
     networks:
       - voting_network
 
@@ -27,6 +32,37 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1024M
+    networks:
+      - voting_network
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.4.4
+    container_name: kafka_init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic eligible_voters --partitions 1 --replication-factor 1 --config cleanup.policy=compact
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic raw_votes --partitions 1 --replication-factor 1 --config cleanup.policy=compact
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic security_alerts --partitions 1 --replication-factor 1
+      "
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
     networks:
       - voting_network
 
@@ -36,6 +72,16 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672" # Panel web de RabbitMQ
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
     networks:
       - voting_network
 
@@ -46,24 +92,56 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secretpassword
       POSTGRES_DB: voting_audit
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d voting_audit"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    networks:
+      - db_internal
+
+  # ==========================================
+  # 2. MICROSERVICIOS (Código Java Spring Boot)
+  # ==========================================
+  voter-registration:
+    build:
+      context: ./voter_registration_service
+    container_name: voter_registration_service
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
     networks:
       - voting_network
 
-  # ==========================================
-  # 2. MICROSERVICIOS (Tu código Java)
-  # ==========================================
   voting-api:
-    build: 
+    build:
       context: ./voting_api
     container_name: voting_api
     ports:
       - "8080:8080"
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - PRELOAD_TEST_VOTERS=false
     depends_on:
-      - kafka
+      kafka-init:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 512M
     networks:
       - voting_network
 
@@ -75,8 +153,35 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - RABBITMQ_HOST=rabbitmq
     depends_on:
-      - kafka
-      - rabbitmq
+      kafka-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 512M
+    networks:
+      - voting_network
+
+  regional-rollup:
+    build:
+      context: ./regional_rollup_service
+    container_name: regional_rollup_service
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 512M
     networks:
       - voting_network
 
@@ -86,10 +191,20 @@ services:
     container_name: bot_detector_service
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - DB_HOST=postgres
     depends_on:
-      - kafka
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
     networks:
       - voting_network
+      - db_internal
 
   analytics-archiver:
     build:
@@ -99,11 +214,60 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - DB_HOST=postgres
     depends_on:
-      - kafka
-      - postgres
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    networks:
+      - voting_network
+      - db_internal
+
+  global-dashboard:
+    build:
+      context: ./global_dashboard_worker
+    container_name: global_dashboard_worker
+    ports:
+      - "8081:8081"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    networks:
+      - voting_network
+
+  regional-dashboard:
+    build:
+      context: ./regional_dashboard_worker
+    container_name: regional_dashboard_worker
+    ports:
+      - "8082:8082"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
     networks:
       - voting_network
 
 networks:
   voting_network:
     driver: bridge
+  db_internal:
+    driver: bridge
+    internal: true

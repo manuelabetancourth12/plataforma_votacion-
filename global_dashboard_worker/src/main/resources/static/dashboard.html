@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Global de Votación</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; background: #0f172a; color: #e2e8f0; }
+        header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+        h1 { margin: 0; font-size: 1.5rem; color: #38bdf8; }
+        nav a { color: #94a3b8; text-decoration: none; font-size: 0.9rem; margin-left: 1rem; }
+        nav a:hover { color: #38bdf8; }
+        .status { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; padding: 0.3rem 0.75rem; border-radius: 999px; background: #1e293b; border: 1px solid #334155; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+        .dot.connected { background: #10b981; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
+        .total-box { font-size: 1.1rem; color: #94a3b8; margin-bottom: 1.25rem; }
+        .total-box strong { font-size: 2rem; color: #f8fafc; margin-left: 0.5rem; }
+        .candidate { margin-bottom: 1rem; }
+        .candidate-header { display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 0.35rem; }
+        .bar-bg { height: 12px; background: #0f172a; border-radius: 999px; overflow: hidden; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); border-radius: 999px; transition: width 0.35s ease; }
+        .empty { color: #64748b; font-style: italic; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Resultados Globales en Vivo</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+            <span class="status"><span id="dot" class="dot"></span><span id="ws-status">Conectando...</span></span>
+            <nav>
+                <a href="http://localhost:8080/" target="_blank">Votar</a>
+                <a href="http://localhost:8082/dashboard.html" target="_blank">Regional</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="card">
+        <div class="total-box">Total de votos únicos:<strong id="total">0</strong></div>
+        <div id="candidates"><p class="empty">Esperando votos en tiempo real...</p></div>
+    </div>
+
+    <script>
+        function connect() {
+            const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(`${proto}//${location.host}/ws-global`);
+            const dot = document.getElementById('dot');
+            const status = document.getElementById('ws-status');
+
+            ws.onopen = () => {
+                dot.classList.add('connected');
+                status.textContent = 'En vivo';
+            };
+            ws.onclose = () => {
+                dot.classList.remove('connected');
+                status.textContent = 'Reconectando...';
+                setTimeout(connect, 2000);
+            };
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const total = data.total ?? 0;
+                document.getElementById('total').textContent = total;
+                const container = document.getElementById('candidates');
+                const entries = Object.entries(data.candidates || {}).sort((a, b) => b[1] - a[1]);
+                if (entries.length === 0) {
+                    container.innerHTML = '<p class="empty">Sin votos registrados aún.</p>';
+                    return;
+                }
+                container.innerHTML = '';
+                entries.forEach(([cand, count]) => {
+                    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                    const div = document.createElement('div');
+                    div.className = 'candidate';
+                    div.innerHTML = `
+                        <div class="candidate-header">
+                            <span><strong>${cand}</strong></span>
+                            <span>${count} votos (${pct}%)</span>
+                        </div>
+                        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+                    `;
+                    container.appendChild(div);
+                });
+            };
+        }
+        connect();
+    </script>
+</body>
+</html>
