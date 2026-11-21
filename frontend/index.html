@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>República Electoral — Plataforma Oficial de Votación</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #fbf8f1;
+            color: #1a1a1a;
+            font-family: "Georgia", "Times New Roman", "Baskerville", serif;
+            line-height: 1.5;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+            border: 2px solid #1a1a1a;
+            padding: 2.5rem;
+            background: #fffefb;
+            box-shadow: 6px 6px 0px #1a1a1a;
+        }
+        header {
+            text-align: center;
+            border-bottom: 3px double #1a1a1a;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .header-seal {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        h1 {
+            font-size: 2.2rem;
+            font-weight: normal;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.35rem;
+        }
+        .subtitle {
+            font-style: italic;
+            font-size: 1rem;
+            color: #444;
+        }
+        .nav-sections {
+            display: flex;
+            border-bottom: 1px solid #1a1a1a;
+            margin-bottom: 2rem;
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 0.85rem 1rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-family: inherit;
+            font-size: 1.05rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            color: #555;
+            transition: all 0.2s;
+        }
+        .nav-btn.active {
+            color: #1a1a1a;
+            border-bottom-color: #1a1a1a;
+            background: rgba(0,0,0,0.03);
+        }
+        .section-panel { display: none; }
+        .section-panel.active { display: block; }
+
+        /* Tarjetón Electoral */
+        .ballot-box {
+            border: 1px dashed #1a1a1a;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            background: #faf7ef;
+        }
+        .ballot-title {
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.65rem 0.8rem;
+            font-family: inherit;
+            font-size: 1rem;
+            border: 1px solid #1a1a1a;
+            background: #fff;
+            color: #1a1a1a;
+        }
+        .chips-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.4rem;
+        }
+        .chip {
+            background: #eae5d8;
+            border: 1px solid #777;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .chip:hover { background: #dfd8c7; }
+        .chip.invalid { border-color: #900; color: #900; }
+        
+        .candidate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        .candidate-card {
+            border: 1px solid #1a1a1a;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            background: #fff;
+            transition: all 0.15s;
+        }
+        .candidate-card:hover {
+            background: #f4efe1;
+        }
+        .candidate-card.selected {
+            background: #1a1a1a;
+            color: #fffefb;
+        }
+        .btn-vote {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: #1a1a1a;
+            color: #fffefb;
+            font-family: inherit;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: 2px solid #1a1a1a;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: background 0.2s;
+        }
+        .btn-vote:hover {
+            background: #333;
+        }
+        
+        /* Resultados */
+        .results-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #1a1a1a;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .total-counter {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .badge-status {
+            font-size: 0.8rem;
+            border: 1px solid #1a1a1a;
+            padding: 0.2rem 0.5rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .badge-status.connected { background: #dff0d8; color: #2b542c; }
+        .badge-status.demo { background: #fcf8e3; color: #8a6d3b; }
+        
+        .candidate-result-row {
+            margin-bottom: 1.25rem;
+        }
+        .candidate-result-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        .progress-bar-bg {
+            height: 16px;
+            border: 1px solid #1a1a1a;
+            background: #eee9dc;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: #1a1a1a;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .regional-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .regional-card {
+            border: 1px solid #1a1a1a;
+            padding: 1rem;
+            background: #fff;
+        }
+        .regional-card h4 {
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 0.35rem;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        /* Operaciones */
+        .op-box {
+            border: 1px solid #1a1a1a;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            background: #fff;
+        }
+        .op-btn {
+            background: #c9302c;
+            color: #fff;
+            border: 1px solid #1a1a1a;
+            padding: 0.65rem 1.25rem;
+            font-family: inherit;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .op-btn:hover { background: #ac2925; }
+        .console-log {
+            background: #1a1a1a;
+            color: #f5f5f5;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+            height: 220px;
+            overflow-y: auto;
+            border: 1px solid #000;
+        }
+        .log-entry { margin-bottom: 0.3rem; }
+        .log-entry.ok { color: #a6e22e; }
+        .log-entry.warn { color: #fd971f; }
+        .log-entry.err { color: #f92672; }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-seal">República — Sistema Electoral Automatizado</div>
+            <h1>Tarjetón Oficial de Votación</h1>
+            <div class="subtitle">Elecciones Presidenciales y Regionales en Tiempo Real</div>
+        </header>
+
+        <nav class="nav-sections">
+            <button class="nav-btn active" onclick="switchSection('votar', this)">1. Votar</button>
+            <button class="nav-btn" onclick="switchSection('resultados', this)">2. Resultados</button>
+            <button class="nav-btn" onclick="switchSection('operaciones', this)">3. Operaciones</button>
+        </nav>
+
+        <!-- SECCIÓN 1: VOTAR -->
+        <main id="sec-votar" class="section-panel active">
+            <div class="ballot-box">
+                <div class="ballot-title">Datos del Sufragante</div>
+                <div class="form-group">
+                    <label for="voterIdInput">Identificación Electoral (Voter ID):</label>
+                    <input type="text" id="voterIdInput" value="VOTER-100" placeholder="Ej: VOTER-100">
+                    <div class="chips-container">
+                        <button type="button" class="chip" onclick="setVoter('VOTER-100')">VOTER-100</button>
+                        <button type="button" class="chip" onclick="setVoter('VOTER-200')">VOTER-200</button>
+                        <button type="button" class="chip" onclick="setVoter('VOTER-300')">VOTER-300</button>
+                        <button type="button" class="chip" onclick="setVoter('VOTER-400')">VOTER-400</button>
+                        <button type="button" class="chip invalid" onclick="setVoter('VOTER-999')">VOTER-999 (No Elegible)</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="regionSelect">Región Electoral:</label>
+                    <select id="regionSelect">
+                        <option value="NORTE">NORTE</option>
+                        <option value="SUR">SUR</option>
+                        <option value="CENTRO">CENTRO</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Seleccione su Candidato:</label>
+                    <div class="candidate-grid">
+                        <div class="candidate-card selected" onclick="selectCandidate('CAND-A', this)">
+                            <h3>CAND-A</h3>
+                            <p>Partido Democrático</p>
+                        </div>
+                        <div class="candidate-card" onclick="selectCandidate('CAND-B', this)">
+                            <h3>CAND-B</h3>
+                            <p>Movimiento Popular</p>
+                        </div>
+                        <div class="candidate-card" onclick="selectCandidate('CAND-C', this)">
+                            <h3>CAND-C</h3>
+                            <p>Alianza Regional</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-vote" onclick="castVote()">Depositar Voto</button>
+            </div>
+        </main>
+
+        <!-- SECCIÓN 2: RESULTADOS -->
+        <main id="sec-resultados" class="section-panel">
+            <div class="results-summary">
+                <div>
+                    <span>Total de Votos Emitidos: </span>
+                    <strong class="total-counter" id="totalVotesDisplay">0</strong>
+                </div>
+                <div>
+                    <span id="backendBadge" class="badge-status">Conectando...</span>
+                </div>
+            </div>
+
+            <div class="ballot-box">
+                <div class="ballot-title">Cómputo Nacional Consolidado</div>
+                <div id="globalResultsContainer">
+                    <div class="candidate-result-row">
+                        <div class="candidate-result-header">
+                            <span>CAND-A</span>
+                            <span id="score-CAND-A">0 votos (0%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="bar-CAND-A"></div>
+                        </div>
+                    </div>
+                    <div class="candidate-result-row">
+                        <div class="candidate-result-header">
+                            <span>CAND-B</span>
+                            <span id="score-CAND-B">0 votos (0%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="bar-CAND-B"></div>
+                        </div>
+                    </div>
+                    <div class="candidate-result-row">
+                        <div class="candidate-result-header">
+                            <span>CAND-C</span>
+                            <span id="score-CAND-C">0 votos (0%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="bar-CAND-C"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="regional-grid" id="regionalGridContainer">
+                <div class="regional-card" id="card-reg-norte">
+                    <h4>Región NORTE</h4>
+                    <div id="reg-content-norte"><p style="font-size:0.9rem; color:#666;">Esperando transmisión...</p></div>
+                </div>
+                <div class="regional-card" id="card-reg-sur">
+                    <h4>Región SUR</h4>
+                    <div id="reg-content-sur"><p style="font-size:0.9rem; color:#666;">Esperando transmisión...</p></div>
+                </div>
+                <div class="regional-card" id="card-reg-centro">
+                    <h4>Región CENTRO</h4>
+                    <div id="reg-content-centro"><p style="font-size:0.9rem; color:#666;">Esperando transmisión...</p></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- SECCIÓN 3: OPERACIONES -->
+        <main id="sec-operaciones" class="section-panel">
+            <div class="op-box">
+                <div class="ballot-title">Pruebas de Seguridad y Detección de Bots</div>
+                <p style="margin-bottom: 1rem; font-size: 0.95rem;">
+                    Simula el envío de una ráfaga inmediata de 6 votos consecutivos para verificar si el detector de fraude 
+                    transiciona a los estados <code>SOSPECHOSA</code> y <code>BLOQUEADA</code>.
+                </p>
+                <button class="op-btn" onclick="triggerBurstSimulation()">Simular Ráfaga Bot (6x)</button>
+            </div>
+
+            <div class="ballot-box">
+                <div class="ballot-title">Registro de Auditoría de Solicitudes</div>
+                <div class="console-log" id="consoleLog">
+                    <div class="log-entry">[SISTEMA] Interfaz electoral inicializada. Listo para recibir votos.</div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            Tribunal Electoral Independiente &bull; Arquitectura Distribuida Segura &bull; Modo Unificado
+        </footer>
+    </div>
+
+    <script>
+        let selectedCandidate = 'CAND-A';
+        let isConnectedToBackend = false;
+        let wsGlobal = null;
+        let wsRegional = null;
+
+        function switchSection(secId, btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(`sec-${secId}`).classList.add('active');
+        }
+
+        function setVoter(id) {
+            document.getElementById('voterIdInput').value = id;
+            logMsg(`Identificación seleccionada: ${id}`);
+        }
+
+        function selectCandidate(cand, cardElement) {
+            selectedCandidate = cand;
+            document.querySelectorAll('.candidate-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            logMsg(`Candidato seleccionado: ${cand}`);
+        }
+
+        function logMsg(msg, type = '') {
+            const consoleEl = document.getElementById('consoleLog');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.textContent = `[${time}] ${msg}`;
+            consoleEl.prepend(div);
+        }
+
+        async function castVote() {
+            const voterId = document.getElementById('voterIdInput').value.trim();
+            const regionId = document.getElementById('regionSelect').value;
+            const candidateId = selectedCandidate;
+
+            if (!voterId) {
+                alert("Por favor ingrese un Voter ID");
+                return;
+            }
+
+            logMsg(`Emitiendo sufragio: ${voterId} -> ${candidateId} (${regionId})...`);
+
+            try {
+                const res = await fetch('/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ voterId, candidateId, regionId })
+                });
+
+                const text = await res.text();
+                if (res.status === 200) {
+                    logMsg(`VOTO ACEPTADO (200): ${text}`, 'ok');
+                } else if (res.status === 403) {
+                    logMsg(`VOTO RECHAZADO (403): ${text}`, 'err');
+                } else {
+                    logMsg(`RESPUESTA HTTP ${res.status}: ${text}`, 'warn');
+                }
+            } catch (err) {
+                logMsg(`Fallo de conexión HTTP /vote: ${err.message}`, 'err');
+            }
+        }
+
+        async function triggerBurstSimulation() {
+            logMsg("Iniciando ráfaga automatizada de 6 votos...", 'warn');
+            for (let i = 1; i <= 6; i++) {
+                castVote();
+                await new Promise(r => setTimeout(r, 200));
+            }
+        }
+
+        // Conexión WebSockets a través del proxy Nginx
+        function initWebSockets() {
+            const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = location.host;
+
+            try {
+                wsGlobal = new WebSocket(`${proto}//${host}/ws-global`);
+                wsGlobal.onopen = () => {
+                    isConnectedToBackend = true;
+                    updateBadge(true);
+                    logMsg("Conexión WebSocket Global establecida con éxito.", 'ok');
+                };
+                wsGlobal.onmessage = (evt) => {
+                    try {
+                        const data = JSON.parse(evt.data);
+                        handleGlobalResults(data);
+                    } catch (e) {
+                        console.error("Error parseando WS global:", e);
+                    }
+                };
+                wsGlobal.onerror = () => handleConnectionError("Global");
+            } catch (e) {
+                handleConnectionError("Global");
+            }
+
+            try {
+                wsRegional = new WebSocket(`${proto}//${host}/ws-regional`);
+                wsRegional.onopen = () => {
+                    logMsg("Conexión WebSocket Regional establecida con éxito.", 'ok');
+                };
+                wsRegional.onmessage = (evt) => {
+                    try {
+                        const data = JSON.parse(evt.data);
+                        handleRegionalResults(data);
+                    } catch (e) {
+                        console.error("Error parseando WS regional:", e);
+                    }
+                };
+                wsRegional.onerror = () => handleConnectionError("Regional");
+            } catch (e) {
+                handleConnectionError("Regional");
+            }
+        }
+
+        function handleConnectionError(type) {
+            console.warn(`WebSocket ${type} desconectado`);
+        }
+
+        function updateBadge(connected) {
+            const badge = document.getElementById('backendBadge');
+            if (connected) {
+                badge.className = "badge-status connected";
+                badge.textContent = "Servidor en Vivo";
+            } else {
+                badge.className = "badge-status demo";
+                badge.textContent = "Modo Demostración";
+            }
+        }
+
+        function handleGlobalResults(data) {
+            const total = data.total || 0;
+            document.getElementById('totalVotesDisplay').textContent = total;
+
+            const candidates = data.candidates || {};
+            ['CAND-A', 'CAND-B', 'CAND-C'].forEach(cand => {
+                const count = candidates[cand] || 0;
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                const scoreEl = document.getElementById(`score-${cand}`);
+                const barEl = document.getElementById(`bar-${cand}`);
+                if (scoreEl) scoreEl.textContent = `${count} votos (${pct}%)`;
+                if (barEl) barEl.style.width = `${pct}%`;
+            });
+        }
+
+        const regionalState = {};
+        function handleRegionalResults(data) {
+            if (data.region && data.candidates) {
+                regionalState[data.region.toLowerCase()] = data.candidates;
+            } else if (typeof data === 'object') {
+                Object.assign(regionalState, data);
+            }
+
+            Object.entries(regionalState).forEach(([region, candidates]) => {
+                const regKey = region.toLowerCase();
+                const container = document.getElementById(`reg-content-${regKey}`);
+                if (!container) return;
+
+                let html = '';
+                const entries = Object.entries(candidates);
+                const total = entries.reduce((acc, [, val]) => acc + val, 0);
+
+                entries.forEach(([cand, score]) => {
+                    const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+                    html += `
+                        <div style="margin-bottom:0.4rem; font-size:0.85rem;">
+                            <strong>${cand}:</strong> ${score} (${pct}%)
+                            <div class="progress-bar-bg" style="height:8px; margin-top:2px;">
+                                <div class="progress-bar-fill" style="width:${pct}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            });
+        }
+
+        // Regla 3: Si no detecta el backend en 3 segundos, activar "Modo Demostración"
+        setTimeout(() => {
+            if (!isConnectedToBackend) {
+                updateBadge(false);
+                logMsg("Backend no detectado en 3s. Activando Modo Demostración automáticamente.", 'warn');
+                handleGlobalResults({
+                    total: 1240,
+                    candidates: { 'CAND-A': 620, 'CAND-B': 410, 'CAND-C': 210 }
+                });
+                handleRegionalResults({
+                    norte: { 'CAND-A': 320, 'CAND-B': 180, 'CAND-C': 90 },
+                    sur: { 'CAND-A': 150, 'CAND-B': 180, 'CAND-C': 60 },
+                    centro: { 'CAND-A': 150, 'CAND-B': 50, 'CAND-C': 60 }
+                });
+            }
+        }, 3000);
+
+        window.addEventListener('DOMContentLoaded', initWebSockets);
+    </script>
+</body>
+</html>

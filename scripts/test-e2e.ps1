@@ -1,3 +1,13 @@
+# ==============================================================================
+# NOTA IMPORTANTE: Entorno de ejecución para pruebas E2E
+# ------------------------------------------------------------------------------
+# Este script apunta directamente a http://localhost:8080/vote porque la prueba
+# de ráfaga (Paso 5) envía el encabezado 'X-Forwarded-For' para simular IPs de bots.
+# Nginx sobrescribe 'X-Forwarded-For' con $remote_addr por seguridad anti-spoofing,
+# por lo que para correr este script se debe levantar el entorno con el compose dev:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# ==============================================================================
 $ErrorActionPreference = "Stop"
 $baseUrl = "http://localhost:8080/vote"
 

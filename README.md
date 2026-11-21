@@ -1,9 +1,10 @@
 # Plataforma de Votación en Vivo de Alta Disponibilidad
 
-Sistema distribuido orientado a eventos (EDA) desarrollado con **Java 17**, **Spring Boot 3.2.3**, **Apache Kafka**, **RabbitMQ**, **PostgreSQL 15** y **Docker Compose**.
+Sistema distribuido orientado a eventos (EDA) desarrollado con **Java 17**, **Spring Boot 3.2.3**, **Apache Kafka**, **RabbitMQ**, **PostgreSQL 15**, **Nginx** y **Docker Compose**.
 
 ## Arquitectura Híbrida
 
+* **Portal Frontend Unificado (Nginx en puerto 80):** Punto de entrada único (`http://localhost`) que sirve la interfaz web de votación y actúa como proxy inverso hacia los servicios internos (`/vote`, `/ws-global`, `/ws-regional`).
 * **Apache Kafka (Fuente de Verdad y Log):**
   * `eligible_voters` *(compactado)*: KTable de votantes elegibles.
   * `raw_votes` *(compactado, clave = `voterId`)*: Flujo de votos para conteo, análisis de fraude y auditoría, conservando el último voto por usuario.
@@ -15,37 +16,44 @@ Sistema distribuido orientado a eventos (EDA) desarrollado con **Java 17**, **Sp
   * `audit_votes`: Registro auditable del último voto por votante.
   * `security_incidents`: Registro forense de incidentes de fraude por IP.
 
-## Microservicios
+## Microservicios y Componentes
 
-| Servicio | Puerto | Responsabilidad |
-|---|---|---|
-| `voter_registration_service` | - | Carga `voters.json` al arrancar y publica votantes elegibles en `eligible_voters`. |
-| `voting_api` | `8080` | Gateway REST (`POST /vote`), valida elegibilidad local, IPs bloqueadas y publica en `raw_votes`. |
-| `vote_processor` | - | Conteo global stateful con unicidad por `voterId` y difusión vía RabbitMQ Fanout. |
-| `regional_rollup_service` | - | Conteo regional stateful aplicando el patrón *Strategy* y difusión vía RabbitMQ Topic. |
-| `bot_detector_service` | - | Detección de ráfagas por IP usando patrón *State* (`NORMAL`, `SOSPECHOSA`, `BLOQUEADA`), emite alertas en Kafka y guarda en PostgreSQL. |
-| `analytics_archiver` | - | Persistencia transaccional en PostgreSQL (`audit_votes`) actualizando el último voto del usuario. |
-| `global_dashboard_worker` | `8081` | Dashboard web global en tiempo real vía WebSockets (`/ws-global`, `dashboard.html`). |
-| `regional_dashboard_worker` | `8082` | Dashboard web regional en tiempo real vía WebSockets (`/ws-regional`, `dashboard.html`). |
+| Servicio | Puerto Host (Prod) | Puerto Host (Dev) | Responsabilidad |
+|---|---|---|---|
+| `frontend` | `80` | `80` | Proxy inverso Nginx y servidor web para la interfaz de votación unificada. |
+| `voting_api` | *(Interno)* | `8080` | Gateway REST (`POST /vote`), valida elegibilidad local, IPs bloqueadas y publica en `raw_votes`. |
+| `global_dashboard_worker` | *(Interno)* | `8081` | Dashboard web global en tiempo real vía WebSockets (`/ws-global`). |
+| `regional_dashboard_worker` | *(Interno)* | `8082` | Dashboard web regional en tiempo real vía WebSockets (`/ws-regional`). |
+| `voter_registration_service` | *(Interno)* | *(Interno)* | Carga `voters.json` al arrancar y publica votantes elegibles en `eligible_voters`. |
+| `vote_processor` | *(Interno)* | *(Interno)* | Conteo global stateful con unicidad por `voterId` y difusión vía RabbitMQ Fanout. |
+| `regional_rollup_service` | *(Interno)* | *(Interno)* | Conteo regional stateful aplicando el patrón *Strategy* y difusión vía RabbitMQ Topic. |
+| `bot_detector_service` | *(Interno)* | *(Interno)* | Detección de ráfagas por IP usando patrón *State*, emite alertas en Kafka y guarda en PostgreSQL. |
+| `analytics_archiver` | *(Interno)* | *(Interno)* | Persistencia transaccional en PostgreSQL (`audit_votes`) actualizando el último voto del usuario. |
 
 ## Cómo ejecutar
 
-### 1. Levantar la plataforma completa con Docker Compose
+### 1. Modo Estándar / Producción (Recomendado)
 Asegúrate de tener **Docker Desktop** en ejecución y corre:
 
 ```bash
 docker compose up --build -d
 ```
+* **Portal Principal:** [http://localhost](http://localhost) (Acceso a votación, resultados globales y regionales unificados).
+* **RabbitMQ Management:** [http://localhost:15672](http://localhost:15672) (`guest` / `guest`).
 
-### 2. Ejecutar prueba End-to-End
+### 2. Modo Desarrollo y Depuración (Compose Dev)
+Para exponer directamente los puertos de los microservicios Java (`8080`, `8081`, `8082`) para depuración local o para ejecutar la prueba de ráfagas con encabezados personalizados de IP:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+### 3. Ejecutar prueba End-to-End
+Requiere el entorno levantado en modo desarrollo:
+
 ```powershell
 .\scripts\test-e2e.ps1
 ```
-
-### 3. Abrir Dashboards en vivo
-* **Global:** http://localhost:8081/dashboard.html
-* **Regional:** http://localhost:8082/dashboard.html
-* **RabbitMQ Management:** http://localhost:15672 (`guest` / `guest`)
 
 ## Pruebas Unitarias Aisladas (JUnit 5 + Mockito)
 Cada microservicio ejecuta sus pruebas en memoria sin requerir Kafka, RabbitMQ ni PostgreSQL:

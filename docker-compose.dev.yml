@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  voting-api:
+    ports:
+      - "8080:8080"
+
+  global-dashboard:
+    ports:
+      - "8081:8081"
+
+  regional-dashboard:
+    ports:
+      - "8082:8082"

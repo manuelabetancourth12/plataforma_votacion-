@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Control - Frontend de Votación</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; }
+        nav { background: #1e293b; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; }
+        .logo { font-size: 1.15rem; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 0.5rem; }
+        .tabs { display: flex; gap: 0.5rem; }
+        .tab-btn { background: #334155; border: none; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .tab-btn:hover { background: #475569; color: #f8fafc; }
+        .tab-btn.active { background: #0284c7; color: #ffffff; }
+        .content-frame { flex: 1; border: none; width: 100%; height: 100%; background: #0f172a; }
+        .info-pill { font-size: 0.8rem; background: #0369a1; padding: 0.25rem 0.6rem; border-radius: 999px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            🗳️ Plataforma de Votación
+            <span class="info-pill">Vista Previa Frontend</span>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('index.html', this)">1. Pantalla de Votación</button>
+            <button class="tab-btn" onclick="switchTab('global-dashboard.html', this)">2. Dashboard Global</button>
+            <button class="tab-btn" onclick="switchTab('regional-dashboard.html', this)">3. Dashboard Regional</button>
+        </div>
+    </nav>
+    <iframe id="main-frame" class="content-frame" src="index.html"></iframe>
+
+    <script>
+        function switchTab(url, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('main-frame').src = url;
+        }
+    </script>
+</body>
+</html>
