@@ -1,5 +1,6 @@
 package com.voting.domain;
 
+/** Estado terminal BLOQUEADA: la IP permanece bloqueada sin transición de salida. */
 public class BlockedState implements RiskState {
     @Override
     public void registerActivity(IpActivityContext context) {

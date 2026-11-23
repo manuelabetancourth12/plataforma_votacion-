@@ -1,5 +1,6 @@
 package com.voting.domain;
 
+/** Contexto del patrón State que contabiliza votos por IP y gestiona su nivel de riesgo. */
 public class IpActivityContext {
     private final String ipAddress;
     private RiskState currentState;

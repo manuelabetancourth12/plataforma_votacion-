@@ -2,6 +2,7 @@ package com.voting.domain.model;
 
 import java.time.Instant;
 
+/** Entidad de dominio inmutable que representa un voto emitido con su marca de tiempo. */
 public record Vote(
         VoterId voterId,
         CandidateId candidateId,

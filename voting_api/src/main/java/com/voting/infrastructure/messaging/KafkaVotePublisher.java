@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+/** Adaptador Kafka que publica votos validados en el tópico raw_votes. */
 @Component
 public class KafkaVotePublisher implements VotePublisher {
 

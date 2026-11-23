@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+/** Adaptador Kafka que publica votantes elegibles en el tópico eligible_voters. */
 @Component
 public class KafkaEligibleVoterPublisher implements EligibleVoterPublisher {
 

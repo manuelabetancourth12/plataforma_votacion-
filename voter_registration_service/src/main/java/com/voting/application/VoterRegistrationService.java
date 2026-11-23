@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/** Servicio de aplicación que filtra y publica únicamente los votantes elegibles. */
 @Service
 public class VoterRegistrationService {
 

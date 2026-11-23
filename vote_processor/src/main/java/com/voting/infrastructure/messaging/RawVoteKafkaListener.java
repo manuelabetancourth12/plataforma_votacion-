@@ -6,6 +6,7 @@ import com.voting.application.VoteAggregationService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+/** Consumidor Kafka que lee votos de raw_votes para el conteo global. */
 @Component
 public class RawVoteKafkaListener {
 

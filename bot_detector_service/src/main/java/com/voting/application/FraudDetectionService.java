@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/** Servicio de aplicación que rastrea actividad por IP, emite alertas y persiste incidentes. */
 @Service
 public class FraudDetectionService {
 

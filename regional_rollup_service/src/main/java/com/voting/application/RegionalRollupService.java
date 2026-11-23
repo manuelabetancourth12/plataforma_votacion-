@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+/** Servicio de aplicación que acumula votos por región y los publica cada 5 s. */
 @Service
 public class RegionalRollupService {
 

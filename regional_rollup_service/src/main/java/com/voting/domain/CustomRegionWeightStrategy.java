@@ -2,6 +2,7 @@ package com.voting.domain;
 
 import java.util.Map;
 
+/** Estrategia que aplica pesos personalizados por región según configuración. */
 public class CustomRegionWeightStrategy implements RegionWeightStrategy {
     private final Map<String, Double> weightsByRegion;
 

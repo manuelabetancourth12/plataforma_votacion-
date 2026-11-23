@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+/** Consumidor RabbitMQ que escucha live_results_regional (results.*) y reenvía al WebSocket. */
 @Component
 public class RegionalResultsRabbitListener {
 

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/** Contador de dominio por región y candidato con unicidad por votante y ponderación. */
 public class RegionalVoteCounter {
     private record VoterSelection(String regionId, String candidateId, double weight) {}
 

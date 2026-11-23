@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Adaptador RabbitMQ que publica el conteo global en el Fanout Exchange live_results_global. */
 @Component
 public class RabbitMQPublisher implements LiveResultPublisher {
 

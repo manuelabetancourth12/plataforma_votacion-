@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/** Almacén en memoria concurrente para registrar y consultar IPs bloqueadas. */
 @Component
 public class InMemoryBlockedIpStore implements BlockedIpStore {
     private final Set<IpAddress> blockedIps = ConcurrentHashMap.newKeySet();

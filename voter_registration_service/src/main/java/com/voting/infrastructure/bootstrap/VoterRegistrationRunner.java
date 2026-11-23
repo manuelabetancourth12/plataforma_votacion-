@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.io.InputStream;
 import java.util.List;
 
+/** Ejecutor inicial que carga voters.json al arrancar la aplicación. */
 @Component
 public class VoterRegistrationRunner implements ApplicationRunner {
 

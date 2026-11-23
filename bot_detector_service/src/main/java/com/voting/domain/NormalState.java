@@ -1,5 +1,6 @@
 package com.voting.domain;
 
+/** Estado NORMAL: escala a SOSPECHOSA si la IP supera 3 votos registrados. */
 public class NormalState implements RiskState {
     @Override
     public void registerActivity(IpActivityContext context) {

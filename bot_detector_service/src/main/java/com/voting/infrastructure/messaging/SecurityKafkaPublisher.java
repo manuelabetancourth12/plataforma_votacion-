@@ -4,6 +4,7 @@ import com.voting.domain.SecurityAlertPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+/** Adaptador Kafka que publica alertas de seguridad en el tópico security_alerts. */
 @Component
 public class SecurityKafkaPublisher implements SecurityAlertPublisher {
 

@@ -3,6 +3,7 @@ package com.voting.infrastructure.persistence;
 import jakarta.persistence.*;
 import java.time.Instant;
 
+/** Entidad JPA que representa un incidente de fraude almacenado en security_incidents. */
 @Entity
 @Table(name = "security_incidents")
 public class SecurityIncidentEntity {

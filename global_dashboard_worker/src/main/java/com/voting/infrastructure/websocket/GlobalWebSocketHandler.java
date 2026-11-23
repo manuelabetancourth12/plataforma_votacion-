@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+/** Manejador WebSocket que administra sesiones activas y difunde resultados globales. */
 @Component
 public class GlobalWebSocketHandler extends TextWebSocketHandler {
 

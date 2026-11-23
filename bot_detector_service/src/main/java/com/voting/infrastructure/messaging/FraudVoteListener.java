@@ -6,6 +6,7 @@ import com.voting.application.FraudDetectionService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+/** Consumidor Kafka que analiza eventos de raw_votes en busca de ráfagas por IP. */
 @Component
 public class FraudVoteListener {
 

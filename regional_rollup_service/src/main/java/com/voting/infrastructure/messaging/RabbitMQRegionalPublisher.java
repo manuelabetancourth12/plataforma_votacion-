@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Adaptador RabbitMQ que publica resultados por región en el Topic Exchange live_results_regional. */
 @Component
 public class RabbitMQRegionalPublisher implements RegionalResultPublisher {
 

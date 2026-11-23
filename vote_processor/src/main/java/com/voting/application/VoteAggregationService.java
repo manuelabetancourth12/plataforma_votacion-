@@ -6,6 +6,7 @@ import com.voting.domain.LiveResultPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+/** Servicio de aplicación que agrega votos globales y difunde el conteo cada 1 s. */
 @Service
 public class VoteAggregationService {
 

@@ -6,6 +6,7 @@ import com.voting.domain.port.EligibilityStore;
 import com.voting.domain.port.VotePublisher;
 import org.springframework.stereotype.Service;
 
+/** Caso de uso que valida IP, elegibilidad del votante y publica el voto. */
 @Service
 public class VotingService {
 

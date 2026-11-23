@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/** Contador de dominio en memoria que mantiene el conteo global por candidato. */
 public class GlobalVoteCounter {
     private final AtomicLong totalVotes = new AtomicLong(0);
     private final Map<String, AtomicLong> votesByCandidate = new ConcurrentHashMap<>();

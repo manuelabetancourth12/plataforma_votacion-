@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+/** Adaptador de persistencia que guarda incidentes de seguridad en PostgreSQL vía JPA. */
 @Component
 public class PostgresSecurityIncidentAdapter implements SecurityIncidentRepository {
 

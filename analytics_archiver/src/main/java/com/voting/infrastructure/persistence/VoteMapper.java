@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
+/** Mapper que valida los campos del evento y construye instancias de VoteEntity. */
 @Component
 public class VoteMapper {
 

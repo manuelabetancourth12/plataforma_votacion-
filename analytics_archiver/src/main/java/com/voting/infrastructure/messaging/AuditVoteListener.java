@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
+/** Consumidor Kafka que lee raw_votes y delega el registro auditable a AnalyticsService. */
 @Component
 public class AuditVoteListener {
 

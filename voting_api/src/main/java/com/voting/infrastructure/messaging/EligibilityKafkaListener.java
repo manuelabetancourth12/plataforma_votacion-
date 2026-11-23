@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+/** Consumidor Kafka que sincroniza el padrón de votantes desde el tópico eligible_voters. */
 @Component
 public class EligibilityKafkaListener implements ConsumerSeekAware {
 

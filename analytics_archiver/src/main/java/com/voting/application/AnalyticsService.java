@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.Optional;
 
+/** Servicio de aplicación que inserta o actualiza el voto auditable por votante. */
 @Service
 public class AnalyticsService {
 

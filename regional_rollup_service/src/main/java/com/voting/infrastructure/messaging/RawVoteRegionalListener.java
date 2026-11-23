@@ -6,6 +6,7 @@ import com.voting.application.RegionalRollupService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+/** Consumidor Kafka que lee votos de raw_votes para la agregación regional. */
 @Component
 public class RawVoteRegionalListener {
 

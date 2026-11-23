@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/** Controlador REST que expone POST /vote para recibir y validar votos entrantes. */
 @RestController
 @RequestMapping("/vote")
 public class VoteController {

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/** Almacén en memoria concurrente para consultar votantes elegibles. */
 @Component
 public class EligibilityStateStore implements EligibilityStore {
     private final Set<VoterId> eligibleVoters = ConcurrentHashMap.newKeySet();

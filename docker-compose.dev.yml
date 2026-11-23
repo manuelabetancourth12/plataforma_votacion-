@@ -1,3 +1,4 @@
+# Sobrescribe docker-compose.yml para exponer puertos locales en desarrollo y pruebas E2E
 version: '3.8'
 
 services:

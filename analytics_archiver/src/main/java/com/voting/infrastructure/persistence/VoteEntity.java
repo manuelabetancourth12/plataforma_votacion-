@@ -3,6 +3,7 @@ package com.voting.infrastructure.persistence;
 import jakarta.persistence.*;
 import java.time.Instant;
 
+/** Entidad JPA mapeada a audit_votes; conserva el último voto final por votante. */
 @Entity
 @Table(name = "audit_votes")
 public class VoteEntity {

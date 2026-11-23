@@ -7,6 +7,7 @@ import com.voting.domain.port.BlockedIpStore;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+/** Consumidor Kafka que escucha security_alerts para bloquear IPs marcadas como BLOQUEADA. */
 @Component
 public class SecurityAlertsKafkaListener {
 
