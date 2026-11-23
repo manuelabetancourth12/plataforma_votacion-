@@ -32,25 +32,17 @@ Sistema distribuido orientado a eventos (EDA) desarrollado con **Java 17**, **Sp
 
 ## Cómo ejecutar
 
-### 1. Modo Estándar / Producción (Recomendado)
+### 1. Levantar la plataforma completa
 Asegúrate de tener **Docker Desktop** en ejecución y corre:
 
 ```bash
 docker compose up --build -d
 ```
 * **Portal Principal:** [http://localhost](http://localhost) (Acceso a votación, resultados globales y regionales unificados).
+* **Servicios directos:** `voting-api` (`8080`), `global-dashboard` (`8081`), `regional-dashboard` (`8082`).
 * **RabbitMQ Management:** [http://localhost:15672](http://localhost:15672) (`guest` / `guest`).
 
-### 2. Modo Desarrollo y Depuración (Compose Dev)
-Para exponer directamente los puertos de los microservicios Java (`8080`, `8081`, `8082`) para depuración local o para ejecutar la prueba de ráfagas con encabezados personalizados de IP:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-```
-
-### 3. Ejecutar prueba End-to-End
-Requiere el entorno levantado en modo desarrollo:
-
+### 2. Ejecutar prueba End-to-End
 ```powershell
 .\scripts\test-e2e.ps1
 ```
